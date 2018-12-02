@@ -5,4 +5,7 @@ Intermediate/*
 Saved/*
 Content/StarterContent/*
 *VC.db
+.vs/*
+*_BuiltData.uasset
+*.sln
 
