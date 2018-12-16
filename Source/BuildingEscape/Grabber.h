@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/InputComponent.h"
 #include "Components/ActorComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Grabber.generated.h"
 
 
@@ -28,4 +30,11 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	float Reach = 100.f;
+
+	UPhysicsHandleComponent* PhysicsHandle = nullptr; /// nullptr is a properly typed check pointer to 0
+	UInputComponent* InputComponent = nullptr;
+	// Raycast and grab what's in reach
+	void Grab();
+	void Release();
+
 };
