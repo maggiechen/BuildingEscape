@@ -21,22 +21,19 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("Waht"));
-	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle) {
+	FindPhysicsHandleComponent();
+	SetupInputComponent();
+}
 
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("The physics handle of %s could not be found"), *(GetOwner()->GetName()));
-	}
-
+void UGrabber::SetupInputComponent()
+{
 	/// Only visible at runtime
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent) {
 		UE_LOG(LogTemp, Warning, TEXT("Input component found"));
-		
+
 		/// Bind the input axis
-		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab); 
+		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		/// "Grab" must be spelled exactly the same way as input specified in project settings
 		/// Notice that we pass the address of the handler method, Grab
 
@@ -47,21 +44,45 @@ void UGrabber::BeginPlay()
 	}
 }
 
+void UGrabber::FindPhysicsHandleComponent()
+{
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (PhysicsHandle) {
+
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("The physics handle of %s could not be found"), *(GetOwner()->GetName()));
+	}
+}
+
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	//this comment will bind to the variable below it
+	/// this comment will not because it uses triple '/', and can be used to describe
+	/// whole blocks of code. 
+}
+
+void UGrabber::Grab() {
+	UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
+	GetFirstPhysicsBodyInReach();
+}
+
+void UGrabber::Release() {
+	UE_LOG(LogTemp, Warning, TEXT("Grab released"))
+}
+
+const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+{
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotator;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPointLocation, 
+		OUT PlayerViewPointLocation,
 		OUT PlayerViewPointRotator
 	);
 
-	/*UE_LOG(LogTemp, Warning, TEXT("Grabber is at location %s, rotation %s"), 
-		*PlayerViewPointLocation.ToString(), 
-		*PlayerViewPointRotator.ToString()
-	)*/
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotator.Vector() * Reach;
 	DrawDebugLine(
 		GetWorld(),
@@ -82,22 +103,14 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		FCollisionQueryParams(FName(TEXT("")), false, GetOwner())
 	);
-	
+
 	AActor* ActorHit = Hit.GetActor();
 	if (ActorHit) {
 		UE_LOG(LogTemp, Warning, TEXT("I'm looking at %s"), *(ActorHit->GetName()));
 	}
-
-	//this comment will bind to the variable below it
-	/// this comment will not because it uses triple '/', and can be used to describe
-	/// whole blocks of code. 
-}
-
-void UGrabber::Grab() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
-}
-
-void UGrabber::Release() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab released"))
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("No hit!"));
+	}
+	return Hit;
 }
 
