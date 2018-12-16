@@ -30,6 +30,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+
 		
 private:
 	UPROPERTY(EditAnywhere)
@@ -41,4 +42,6 @@ private:
 	void Grab();
 	void Release();
 	const FHitResult GetFirstPhysicsBodyInReach();
+	FVector GetReachLineEnd();
+	FVector GetReachLineStart();
 };

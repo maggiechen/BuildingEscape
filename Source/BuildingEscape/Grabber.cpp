@@ -2,6 +2,7 @@
 
 #include "Grabber.h"
 #include "Engine/World.h"
+#include "Components/PrimitiveComponent.h"
 #include "DrawDebugHelpers.h"
 
 #define OUT
@@ -30,8 +31,6 @@ void UGrabber::SetupInputComponent()
 	/// Only visible at runtime
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent) {
-		UE_LOG(LogTemp, Warning, TEXT("Input component found"));
-
 		/// Bind the input axis
 		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		/// "Grab" must be spelled exactly the same way as input specified in project settings
@@ -47,10 +46,7 @@ void UGrabber::SetupInputComponent()
 void UGrabber::FindPhysicsHandleComponent()
 {
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle) {
-
-	}
-	else {
+	if (!PhysicsHandle) {
 		UE_LOG(LogTemp, Error, TEXT("The physics handle of %s could not be found"), *(GetOwner()->GetName()));
 	}
 }
@@ -63,18 +59,28 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	//this comment will bind to the variable below it
 	/// this comment will not because it uses triple '/', and can be used to describe
 	/// whole blocks of code. 
+
+	if (PhysicsHandle->GrabbedComponent) {
+		FVector ReachLineEnd = GetReachLineEnd();
+		PhysicsHandle->SetTargetLocation(ReachLineEnd);
+	}
 }
 
-void UGrabber::Grab() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
-	GetFirstPhysicsBodyInReach();
+
+FVector UGrabber::GetReachLineStart()
+{
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotator;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotator
+	);
+
+	FVector LineTraceEnd = PlayerViewPointLocation;
+	return LineTraceEnd;
 }
 
-void UGrabber::Release() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab released"))
-}
-
-const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+FVector UGrabber::GetReachLineEnd()
 {
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotator;
@@ -84,6 +90,29 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 	);
 
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotator.Vector() * Reach;
+	return LineTraceEnd;
+}
+
+void UGrabber::Grab() {
+	auto HitResult = GetFirstPhysicsBodyInReach();
+	auto ComponentToGrab = HitResult.GetComponent();
+	if (HitResult.GetActor()) {
+		PhysicsHandle->GrabComponentAtLocation(
+			ComponentToGrab, 
+			NAME_None, 
+			ComponentToGrab->GetOwner()->GetActorLocation()
+		);
+	}
+}
+
+void UGrabber::Release() {
+	PhysicsHandle->ReleaseComponent();
+}
+
+const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+{
+	FVector PlayerViewPointLocation = GetReachLineStart();
+	FVector LineTraceEnd = GetReachLineEnd();
 	DrawDebugLine(
 		GetWorld(),
 		PlayerViewPointLocation,
