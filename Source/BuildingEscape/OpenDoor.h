@@ -42,6 +42,7 @@ private:
 
 	float LastDoorOpenTime;
 
-	AActor* ActorThatOpens; // A pawn is a subclass of actor
 	AActor* Owner; // The opening door
+	float GetTotalMassOfActorsOnPlate();
+
 };
