@@ -19,6 +19,9 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
+	if (!PressurePlate) {
+		UE_LOG(LogTemp, Error, TEXT('Pressure plate not assigned on %s'), *GetOwner()->GetName());
+	}
 	Owner = GetOwner();
 }
 
@@ -28,8 +31,7 @@ void UOpenDoor::OpenDoor()
 }
 
 void UOpenDoor::CloseDoor()
-{
-	
+{	
 	Owner->SetActorRotation(FRotator(0.0f, 0.f, 0.0f));
 }
 
@@ -51,6 +53,7 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 float UOpenDoor::GetTotalMassOfActorsOnPlate() {
 	float TotalMass = 0.f;
 	TArray<AActor*> OverlappingActors;
+	if (!PressurePlate) { return 0.f; }
 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 	for (const auto& Actor : OverlappingActors) {
 		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();

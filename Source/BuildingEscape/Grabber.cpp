@@ -59,7 +59,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	//this comment will bind to the variable below it
 	/// this comment will not because it uses triple '/', and can be used to describe
 	/// whole blocks of code. 
-
+	if (!PhysicsHandle) { return; }
 	if (PhysicsHandle->GrabbedComponent) {
 		FVector ReachLineEnd = GetReachLineEnd();
 		PhysicsHandle->SetTargetLocation(ReachLineEnd);
@@ -96,6 +96,8 @@ FVector UGrabber::GetReachLineEnd()
 void UGrabber::Grab() {
 	auto HitResult = GetFirstPhysicsBodyInReach();
 	auto ComponentToGrab = HitResult.GetComponent();
+	if (!PhysicsHandle) { return; }
+
 	if (HitResult.GetActor()) {
 		PhysicsHandle->GrabComponentAtLocation(
 			ComponentToGrab, 
@@ -106,6 +108,7 @@ void UGrabber::Grab() {
 }
 
 void UGrabber::Release() {
+	if (!PhysicsHandle) { return; }
 	PhysicsHandle->ReleaseComponent();
 }
 
