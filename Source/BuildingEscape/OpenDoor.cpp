@@ -20,7 +20,7 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 	if (!PressurePlate) {
-		UE_LOG(LogTemp, Error, TEXT('Pressure plate not assigned on %s'), *GetOwner()->GetName());
+		UE_LOG(LogTemp, Error, TEXT("Pressure plate not assigned on %s"), *GetOwner()->GetName());
 	}
 	Owner = GetOwner();
 }
